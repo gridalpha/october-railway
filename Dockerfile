@@ -37,10 +37,12 @@ USER root
 
 # phpredis backs the cache, session and queue connections; OPcache and exif are
 # the two extensions a production CMS wants that the base image leaves out.
+# OPcache is bundled but not built in the base image, so it needs ext-install
+# rather than ext-enable — the latter only knows about .so files already present.
 RUN set -eux; \
     yes '' | pecl install redis; \
-    docker-php-ext-enable redis opcache; \
-    docker-php-ext-install -j"$(nproc)" exif; \
+    docker-php-ext-enable redis; \
+    docker-php-ext-install -j"$(nproc)" exif opcache; \
     rm -rf /tmp/pear; \
     php -m | grep -qx redis; \
     php -m | grep -qx exif; \
