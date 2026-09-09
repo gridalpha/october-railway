@@ -71,6 +71,7 @@ if ($previous === $stamp) {
     exit(0);
 }
 
+$existing->login                 = $login;
 $existing->email                 = $email;
 $existing->password              = $password;
 $existing->password_confirmation = $password;
