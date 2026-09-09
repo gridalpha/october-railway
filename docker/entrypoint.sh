@@ -111,6 +111,12 @@ else
 fi
 
 chown -R www-data:www-data "$STORAGE" "$APP_DIR/bootstrap/cache"
+chmod 755 "$STORAGE" "$STORAGE/themes"
+
+log "storage $(stat -c '%U:%G %a' "$STORAGE"), themes $(stat -c '%U:%G %a' "$STORAGE/themes")"
+as_app "test -r '$APP_DIR/themes' && test -x '$APP_DIR/themes'" \
+    && log "themes readable by www-data" \
+    || log "WARNING: www-data cannot read $APP_DIR/themes"
 
 log "starting: $*"
 exec "$@"
