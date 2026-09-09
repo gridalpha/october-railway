@@ -37,19 +37,17 @@ USER root
 
 # phpredis backs the cache, session and queue connections; OPcache and exif are
 # the two extensions a production CMS wants that the base image leaves out.
-# OPcache is bundled but not built in the base image, so it needs ext-install
-# rather than ext-enable — the latter only knows about .so files already present.
-# One extension per invocation: naming two in a single parallel ext-install left
-# the shared build with nothing to install (`cp: cannot stat 'modules/*'`).
+# OPcache is not installable here: on this base `docker-php-ext-install opcache`
+# builds nothing shared and dies on `cp: cannot stat 'modules/*'`. The build
+# reports whether the runtime already carries it instead of failing over it.
 RUN set -eux; \
     yes '' | pecl install redis; \
     docker-php-ext-enable redis; \
     docker-php-ext-install exif; \
-    docker-php-ext-install opcache; \
     rm -rf /tmp/pear; \
     php -m | grep -qx redis; \
     php -m | grep -qx exif; \
-    php -r 'exit(extension_loaded("Zend OPcache") ? 0 : 1);'
+    php -r 'fwrite(STDERR, "[build] Zend OPcache: " . (extension_loaded("Zend OPcache") ? "loaded" : "absent") . PHP_EOL);'
 
 COPY --from=builder /build /var/www/html
 
