@@ -39,10 +39,13 @@ USER root
 # the two extensions a production CMS wants that the base image leaves out.
 # OPcache is bundled but not built in the base image, so it needs ext-install
 # rather than ext-enable — the latter only knows about .so files already present.
+# One extension per invocation: naming two in a single parallel ext-install left
+# the shared build with nothing to install (`cp: cannot stat 'modules/*'`).
 RUN set -eux; \
     yes '' | pecl install redis; \
     docker-php-ext-enable redis; \
-    docker-php-ext-install -j"$(nproc)" exif opcache; \
+    docker-php-ext-install exif; \
+    docker-php-ext-install opcache; \
     rm -rf /tmp/pear; \
     php -m | grep -qx redis; \
     php -m | grep -qx exif; \
