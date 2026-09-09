@@ -53,10 +53,17 @@ COPY --from=builder /build /var/www/html
 
 # Theme files are editable from the backend, so they are state, not code. Keep a
 # pristine copy outside the mount and let the entrypoint seed the volume from it.
+#
+# The symlink is what nginx serves /themes/<x>/assets from. October itself must
+# be pointed at the real directory: its theme lister opens themes_path() with
+# DirectoryIterator, which fails "Permission denied" on the symlink and breaks
+# the whole Editor while every file read through that same symlink works.
 RUN set -eux; \
     mv /var/www/html/themes /opt/october-themes-dist; \
     ln -s /var/www/html/storage/themes /var/www/html/themes; \
     test -d /opt/october-themes-dist/demo
+
+ENV THEMES_PATH=/var/www/html/storage/themes
 
 COPY docker/php/zz-october.ini /usr/local/etc/php/conf.d/zz-october.ini
 COPY docker/php/zz-october-pool.conf /usr/local/etc/php-fpm.d/zz-october-pool.conf
